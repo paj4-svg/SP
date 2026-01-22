@@ -1,14 +1,26 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/sp/v2/column-formatting.schema.json",
-  "elmType": "span",
+  "elmType": "a",
   "attributes": {
-    "onclick": "window.open(''+[$LINK_KOLUMNA].Url,'_blank')"
+    "href": "=@currentField.Url",
+    "target": "_blank",
+    "title": "Otwórz link"
   },
   "style": {
-    "color": "#0078d4",
-    "font-weight": "600",
-    "cursor": "pointer",
-    "text-decoration": "underline"
+    "display": "inline-flex",
+    "align-items": "center",
+    "justify-content": "center"
   },
-  "txtContent": "@currentField"
+  "children": [
+    {
+      "elmType": "span",
+      "attributes": {
+        "iconName": "OpenInNewWindow"
+      },
+      "style": {
+        "font-size": "18px",
+        "color": "#0078d4"
+      }
+    }
+  ]
 }
