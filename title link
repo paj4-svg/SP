@@ -1,16 +1,14 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/sp/v2/column-formatting.schema.json",
-  "elmType": "a",
+  "elmType": "span",
   "attributes": {
-    "href": "=''+[$LINK_KOLUMNA].Url",
-    "target": "_blank",
-    "rel": "noopener noreferrer"
+    "onclick": "window.open(''+[$LINK_KOLUMNA].Url,'_blank')"
   },
   "style": {
     "color": "#0078d4",
     "font-weight": "600",
-    "text-decoration": "none",
-    "cursor": "pointer"
+    "cursor": "pointer",
+    "text-decoration": "underline"
   },
   "txtContent": "@currentField"
 }
