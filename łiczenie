@@ -1,0 +1,24 @@
+=JEŻELI(LUB(B4=""; D4=""); ""; LET(
+    start; B4;
+    koniec; D4;
+    ws; CZAS(8;0;0);
+    we; CZAS(16;0;0);
+    sd; DATA(ROK(start); MIESIĄC(start); DZIEŃ(start));
+    ed; DATA(ROK(koniec); MIESIĄC(koniec); DZIEŃ(koniec));
+    st; start-sd;
+    et; koniec-ed;
+    
+    caleDni; MAKS(0; DNI.ROBOCZE.NIEST(sd+1; ed-1; 1; Swieta[Data]));
+    czyPracaStart; DNI.ROBOCZE.NIEST(sd; sd; 1; Swieta[Data]);
+    czyPracaKoniec; DNI.ROBOCZE.NIEST(ed; ed; 1; Swieta[Data]);
+    
+    godzStart; JEŻELI(czyPracaStart=0; 0; MAKS(0; MIN(we; JEŻELI(sd=ed; et; we)) - MAKS(ws; st)));
+    godzKoniec; JEŻELI(sd=ed; 0; JEŻELI(czyPracaKoniec=0; 0; MAKS(0; MIN(we; et) - ws)));
+    
+    sumaDni; caleDni * (we - ws) + godzStart + godzKoniec;
+    wynik; JEŻELI(koniec<=start; 0; sumaDni);
+    
+    h; INT(wynik*24);
+    m; MINUTA(wynik);
+    TEKST(h; "0") & "h " & TEKST(m; "00") & "min"
+))
