@@ -1,0 +1,45 @@
+let
+    // 1. Parametry robocze
+    Start = [Data zlecenia],
+    Koniec = [Data statusu],
+    Status = [Status wniosku],
+    GodzinaStart = #time(8, 0, 0),
+    GodzinaKoniec = #time(16, 0, 0),
+    ListaSwiat = Swieta[Data], // Zakładamy tabelę 'Swieta' z kolumną 'Data'
+
+    // 2. Warunek statusu
+    Wynik = if Status <> "Zakończony pozytywnie" then null else 
+    let
+        // 3. Normalizacja dat (jeśli wypadają w weekend/święto lub poza 8-16, przesuń do najbliższego momentu roboczego)
+        SkorygujDate = (dt) =>
+            let
+                Data = Date.From(dt),
+                Czas = Time.From(dt),
+                CzyRoboczy = Date.DayOfWeek(Data, Day.Monday) < 5 and not List.Contains(ListaSwiat, Data),
+                WynikDT = if not CzyRoboczy then null // zajmiemy się tym niżej
+                          else if Czas < GodzinaStart then DateTime.From(Data) + Duration.From(GodzinaStart)
+                          else if Czas > GodzinaKoniec then DateTime.From(Data) + Duration.From(GodzinaKoniec)
+                          else dt
+            in WynikDT,
+
+        // Generowanie listy wszystkich dni roboczych pomiędzy datami
+        ListaDni = List.Dates(Date.From(Start), Number.From(Date.From(Koniec) - Date.From(Start)) + 1, #duration(1,0,0,0)),
+        DniRobocze = List.Select(ListaDni, each Date.DayOfWeek(_, Day.Monday) < 5 and not List.Contains(ListaSwiat, _)),
+        
+        LiczbaPelnychDni = List.Count(DniRobocze) - (if List.Contains(DniRobocze, Date.From(Start)) then 1 else 0) 
+                                           - (if List.Contains(DniRobocze, Date.From(Koniec)) then 1 else 0),
+        
+        // Czas w pierwszym i ostatnim dniu
+        CzasPierwszyDzien = if not List.Contains(DniRobocze, Date.From(Start)) then #duration(0,0,0,0)
+                            else GodzinaKoniec - Time.Max(GodzinaStart, Time.Min(GodzinaKoniec, Time.From(Start))),
+        
+        CzasOstatniDzien = if not List.Contains(DniRobocze, Date.From(Koniec)) then #duration(0,0,0,0)
+                           else Time.Min(GodzinaKoniec, Time.Max(GodzinaStart, Time.From(Koniec))) - GodzinaStart,
+
+        SumaCzasu = if Date.From(Start) = Date.From(Koniec) and List.Contains(DniRobocze, Date.From(Start))
+                    then Time.Min(GodzinaKoniec, Time.From(Koniec)) - Time.Max(GodzinaStart, Time.From(Start))
+                    else #duration(0, LiczbaPelnychDni * 8, 0, 0) + CzasPierwszyDzien + CzasOstatniDzien
+    in 
+        if SumaCzasu < #duration(0,0,0,0) then #duration(0,0,0,0) else SumaCzasu
+in
+    Wynik
